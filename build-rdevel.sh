@@ -1,27 +1,58 @@
 #!/bin/bash
 
-# Download and compile the latest R developmental version
+# Download and compile the latest R stable or developmental version
 #
 # The script downloads the latest R from CRAN as well the Renviron.bioc file
 # from bioconductor that is needed for running R check.
 #
-# Usage: build-rdevel
+# Bioconductor alternates between  development or stable R version, because
+# its release cycle is 6 month vs. 1 year for R,
+#
+# Usage: build-rbioc --stable | --devel
 #
 # the script uses the environmental variables:
 #
 #   RDEST       path to where R devel will be installed (def: /tmp/R). The path
 #               is created automatically if needed.
-#   RVERSION    the R version to compile (def: R-devel)
+#   RVERSION    the R version to compile: def: R-devel for --devel and R-latest
+#               for --stable
 #   RENVBIOC    the location of the Renviron.bioc file (def: ~/.Renviron.bioc)
 #
 # Note: Be aware that the script will remove the current R installation
 #       in RDEST and build a fresh one.
 
 RDEST="${RDEST:-/tmp/R}"
-RVERSION="${RVERSION:-R-devel}"
 RENVBIOC="${RENVBIOC:-$HOME/.Renviron.bioc}"
 RENVURL="http://bioconductor.org/checkResults/devel/bioc-LATEST/Renviron.bioc"
 
+usage() {
+    test -n "$2" && echo "$2"
+    echo "Usage: $0 --stable | --devel"
+    exit $1
+}
+
+if (( $# != 1 )); then
+    usage 1 "Missing argument:"
+fi
+
+case $1 in
+    --stable)
+        RVERSION="${RVERSION:-R-latest}"
+        CRANURL="https://cran.r-project.org/src/base/${RVERSION}.tar.gz"
+        ;;
+    --devel)
+        RVERSION="${RVERSION:-R-devel}"
+        CRANURL="https://cran.r-project.org/src/base-prerelease/${RVERSION}.tar.gz"
+        ;;
+    --help|-h)
+        usage 0
+        ;;
+    *)
+        usage 1 "Unknown argument"
+        ;;
+esac
+
+# download or update Renvbioc
 if [ -f "$RENVBIOC" ] ; then
     curl -o "$RENVBIOC" -R -z "$RENVBIOC" "$RENVURL"
 else
@@ -31,21 +62,27 @@ fi
 mkdir -p "$RDEST" || exit 1
 cd "$RDEST" || exit 1
 
-test -f "$RVERSION.tar.gz" && rm -r "$RVERSION.tar.gz"
-test -d "$RVERSION.tar.gz" && rm -rf "$RVERSION"
+if [ -f "$RVERSION.tar.gz" ]; then
+    curl -o "$RVERSION.tar.gz" -R -z "$RVERSION.tar.gz" "$CRANURL"
+else
+    curl -o "$RVERSION.tar.gz" -R "$CRANURL"
+fi
 
-curl -O "https://cran.r-project.org/src/base-prerelease/${RVERSION}.tar.gz" || exit 1
+RDIR=$(tar tf "$RVERSION.tar.gz" | head -1)
+test -d "$RDIR" && rm -rf "$RDIR"
 
 tar xf "$RVERSION.tar.gz"
-cd "$RVERSION" && ./configure && make -j9
+cd "$RDIR" && ./configure && make -j $(nproc)
 
-# install TargetSearch dependencies
+# install TargetSearch dependencies using BiocManager version 'devel'
 bin/R --vanilla <<EOF
    r <- getOption("repos")
    r["CRAN"] <- "http://cloud.r-project.org"
    options(repos=r)
    install.packages(c("ncdf4", "tinytest", "assertthat", "knitr", "BiocManager"))
-   BiocManager::install(c("BiocStyle", "TargetSearchData"))
+   BiocManager::install(c("BiocStyle", "TargetSearchData"), version='devel', ask=FALSE)
 EOF
+
+echo "Please add '${RDEST}/${RDIR}bin' to your \$PATH"
 
 # vim: set ts=4 sw=4 et:
