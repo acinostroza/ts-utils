@@ -76,11 +76,19 @@ cd "$RDIR" && ./configure && make -j $(nproc)
 
 # install TargetSearch dependencies using BiocManager version 'devel'
 bin/R --vanilla <<EOF
+   # install BiocManager
    r <- getOption("repos")
    r["CRAN"] <- "http://cloud.r-project.org"
-   options(repos=r)
-   install.packages(c("ncdf4", "tinytest", "assertthat", "knitr", "BiocManager"))
-   BiocManager::install(c("BiocStyle", "TargetSearchData"), version='devel', ask=FALSE)
+   op <- options(repos=r)
+   install.packages('BiocManager')
+   options(op)
+
+   # install TargetSearch from bioconductor
+   BiocManager::install(version='devel', ask=FALSE)
+   BiocManager::install('TargetSearch', ask=FALSE)
+
+   # install suggest packages
+   BiocManager::install(c('TargetSearchData', 'BiocStyle', 'knitr', 'tinytest'), ask=FALSE)
 EOF
 
 echo "Please add '${RDEST}/${RDIR}bin' to your \$PATH"
