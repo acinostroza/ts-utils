@@ -6,20 +6,28 @@
 # temporary directory is created to store the tarball. This is cleaned at the
 # end. The vignettes are not built.
 #
-# Usage: ts-quick-install <repo> <destination>
+# The destination is optional. If not provided, then the script will try
+# to detected it automatically.
+#
+# Usage: ts-quick-install <repo> [destination]
 #
 # Args:
 #   repo         path to the git repository
 #   destination  path to the package destination (created if needed)
 #
 
-if (( $# < 2 )) ; then
-    echo "Usage: $0 <repo> <destination>"
+if (( $# < 1 )) ; then
+    echo "Usage: $0 <repo> [destination]"
     exit
 fi
 
 path=$(realpath "$1")
-dest=$(realpath "$2")
+
+if (( $# >= 2 )) ; then
+    dest=$(realpath "$2")
+else
+    dest=$(Rscript -e 'cat(.libPaths()[1])')
+fi
 
 if [ ! -f "$path"/DESCRIPTION ] ; then
     echo "Is '$path' a R package?"
@@ -31,6 +39,9 @@ fi
 
 if [ ! -d "$dest" ] ; then
     mkdir -p "$dest" || exit 1
+elif [ ! -w "$dest" ] ; then
+    echo "Cannot write in \`$dest\`"
+    exit 1
 fi
 
 tmpdir=$(mktemp -d)
