@@ -35,9 +35,9 @@ else
 fi
 
 if [ -f "$RENVBIOC" ] ; then
-    curl -o "$RENVBIOC" -R -z "$RENVBIOC" "$RENVURL"
+    curl -L -o "$RENVBIOC" -R -z "$RENVBIOC" "$RENVURL"
 else
-    curl -o "$RENVBIOC" -R "$RENVURL"
+    curl -L -o "$RENVBIOC" -R "$RENVURL"
 fi
 
 if (( $# == 2 )) ; then
