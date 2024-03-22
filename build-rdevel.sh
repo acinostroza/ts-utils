@@ -54,18 +54,18 @@ esac
 
 # download or update Renvbioc
 if [ -f "$RENVBIOC" ] ; then
-    curl -o "$RENVBIOC" -R -z "$RENVBIOC" "$RENVURL"
+    curl -L -o "$RENVBIOC" -R -z "$RENVBIOC" "$RENVURL"
 else
-    curl -o "$RENVBIOC" -R "$RENVURL"
+    curl -L -o "$RENVBIOC" -R "$RENVURL"
 fi
 
 mkdir -p "$RDEST" || exit 1
 cd "$RDEST" || exit 1
 
 if [ -f "$RVERSION.tar.gz" ]; then
-    curl -o "$RVERSION.tar.gz" -R -z "$RVERSION.tar.gz" "$CRANURL"
+    curl -L -o "$RVERSION.tar.gz" -R -z "$RVERSION.tar.gz" "$CRANURL"
 else
-    curl -o "$RVERSION.tar.gz" -R "$CRANURL"
+    curl -L -o "$RVERSION.tar.gz" -R "$CRANURL"
 fi
 
 RDIR=$(tar tf "$RVERSION.tar.gz" | head -1)
