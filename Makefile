@@ -8,3 +8,4 @@ install:
 	install -Dm755 ts-quick-install.sh $(DESTDIR)$(PREFIX)/bin/ts-quick-install
 	install -Dm755 ts-quick-test.sh $(DESTDIR)$(PREFIX)/bin/ts-quick-test
 	install -Dm755 ts-get-check-reports.sh $(DESTDIR)$(PREFIX)/bin/ts-get-check-reports
+	install -Dm755 ts-check-reports.pl $(DESTDIR)$(PREFIX)/bin/ts-check-reports
