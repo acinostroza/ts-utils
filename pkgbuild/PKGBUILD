@@ -1,0 +1,23 @@
+# Maintainer:
+
+pkgname=ts-utils-git
+pkgver=r0
+pkgrel=1
+pkgdesc="Utils for building and checking TargetSearch"
+arch=('any')
+url="https://github.com/acinostroza/ts-utils"
+license=('Unlicense')
+depends=('bash' 'curl' 'perl' 'r' 'sed' 'wget')
+makedepends=('git')
+source=("git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd ts-utils
+  printf "r%s.%s" $(git rev-list --count HEAD) $(git rev-parse --short HEAD)
+}
+
+package() {
+  cd ts-utils
+  make DESTDIR="$pkgdir" PREFIX=/usr install
+}
