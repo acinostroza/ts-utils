@@ -25,7 +25,8 @@ if($opts{h}) {
 
 my $release = $opts{d} ? "devel" : "release";
 my $repository = $opts{e} ? "data-experiment" : "bioc";
-my $package = scalar(@ARGV) == 0 ? 'TargetSearch' : $ARGV[0];
+my $package = scalar(@ARGV) > 0 ? $ARGV[0] :
+                ($opts{e} ? "TargetSearchData" : "TargetSearch");
 my $url = "https://bioconductor.org/checkResults/$release/$repository-LATEST/";
 my $output = "/tmp/ts-$USER-$release-$repository.html";
 
@@ -81,7 +82,8 @@ USAGE
   ts-check-results -h
 
 OPTIONS
-  <PACKAGE>    The package to check, by default is TargetSearch.
+  <PACKAGE>    The package to check, by default it is either TargetSearch or
+               TargetSearchData depending on the `-e' parameter.
   -d           Download the "devel" page instead of "release".
   -e           The package is an experiment package.
   -f           Force download of the report page.
