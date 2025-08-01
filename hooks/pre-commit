@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# a simple hook to update the Date field of the DESCRIPTION file
+# if and only if the Version is updated.
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=$(git hash-object -t tree /dev/null)
+fi
+
+# Redirect output to stderr.
+exec 1>&2
+
+for file in $(git diff-index --cached --name-only --diff-filter=AM $against)
+do
+    if [[ "$file" == "DESCRIPTION" ]] ; then
+        if git diff --staged DESCRIPTION | grep -q "^+Version: " ; then
+            echo "Updating date"
+            date=$(date "+%F")
+            sed -i 's/^Date: .*$/Date: '$date'/' DESCRIPTION
+            git update-index --add DESCRIPTION
+        fi
+    fi
+done
+
+# vim: set ts=4 sw=4 et:
