@@ -91,7 +91,6 @@ my $package = scalar(@ARGV) > 0 ? $ARGV[0] : "TargetSearch";
 my $url = "https://bioconductor.org/checkResults/$release/$type-LATEST/$package/";
 my $output = "/tmp/ts-$USER-$release-$type-$package.html";
 
-say "$url";
 # download file
 if(! -e $output || $opts{f} ) {
     system("curl", "-sL", "-o", $output, $url) == 0 or die $!;
