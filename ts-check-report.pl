@@ -69,6 +69,13 @@ sub gettype {
     return $types{$arg};
 }
 
+# led to color
+sub l2c {
+    my %code = qw/ red 31 green 32 blue 34 /;
+    my $led = shift;
+    return $led eq 'none' ? "" : "\033[$code{$led}m●\033[0m";
+}
+
 #####################################################################
 
 # parse options
@@ -136,6 +143,7 @@ while (<IN>) {
         $hasbin = 1;
     }
     elsif($flag == 1) {
+        my $led = (/(Blue|Red|Green)/) ? lc $1 : "none";
         my @x = parse_server($_);
         my @st = ();
         foreach (@x) {
@@ -145,6 +153,7 @@ while (<IN>) {
             }
         }
         if(scalar(@st) > 0) {
+            push(@st, $led);
             push(@stats, \@st);
         }
     }
@@ -166,12 +175,16 @@ if($hasbin) {
 print "\n";
 
 foreach my $st (@stats) {
+    my $led = pop(@$st);
     print sprintf(" \033[1m%-10s\033[0m  %-39s", $$st[0], $$st[1]);
     foreach my $code (@$st[2..$#$st]) {
         my $str = exists($codes{$code}) ? $codes{$code} : $code;
         print "$str  ";
     }
-    print("\n");
+    if($hasbin and $#$st < 5) {
+        print "           ";
+    }
+    print l2c($led), "\n";
 }
 
 print("\n");
